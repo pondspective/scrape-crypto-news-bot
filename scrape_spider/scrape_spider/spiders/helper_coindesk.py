@@ -3,6 +3,7 @@ import json
 from datetime import datetime, timedelta, date
 import pandas as pd
 import numpy as np
+import time
 
 BASE_URL = 'https://www.coindesk.com'
 NEWS_URL_ENDPOINT = 'https://www.coindesk.com/pf/api/v3/content/fetch/websked-collections'
@@ -48,6 +49,7 @@ def fetch_news_url_by_category(category):
     else:
         print(f"Get data category {category} failed error status {resp.status_code}")
         print(resp.text)
+    time.sleep(1)
     return data
 
 def fetch_news_url(categories, transform=True):
@@ -70,15 +72,20 @@ def get_historical_news(data,days_ago):
 def get_latest_news(data, category='all'):
     df = pd.json_normalize(data)
     df['date'] = df['date'].apply(lambda x: x.date())
-    filter_date = df['date'].max()
+    df.to_csv('debug.csv')
+    print(df.head(5))
+    print(df.dtypes)
 
+    # Get latest date
+    filter_date = df.dropna(subset=['date'])['date'].max()
+    
     if category == 'all':
         return df[df['date'] == filter_date]
     else:
         return df[df['date'] == filter_date][df['type'] == category]
 
 news = fetch_news_url(categories)
-print(get_latest_news(news, category='markets').head(5))
+print(get_latest_news(news).head(5))
 
 
 
