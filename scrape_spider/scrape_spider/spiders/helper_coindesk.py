@@ -8,7 +8,7 @@ import time
 BASE_URL = 'https://www.coindesk.com'
 NEWS_URL_ENDPOINT = 'https://www.coindesk.com/pf/api/v3/content/fetch/websked-collections'
 LIMIT_ROWS_PER_CATEGORY = 30
-categories = ['markets','business','policy','tech','web3content']
+# categories = ['markets','business','policy','tech','web3content']
 
 def make_fetch_news_payload(content_alias, size, from_=0):
     return { 'query' : json.dumps({"content_alias":content_alias
@@ -40,9 +40,9 @@ def transform_data(data):
         selected_data.append(item)
     return selected_data
 
-def fetch_news_url_by_category(category):
+def fetch_news_url_by_category(category, limit):
     print(f"Get data from category {category}")
-    payload = make_fetch_news_payload(content_alias=category, size=LIMIT_ROWS_PER_CATEGORY)
+    payload = make_fetch_news_payload(content_alias=category, size=limit)
     resp = requests.get(url=NEWS_URL_ENDPOINT, params=payload)
     if resp.status_code == 200:
         data = json.loads(resp.text)
@@ -55,7 +55,7 @@ def fetch_news_url_by_category(category):
 def fetch_news_url(categories, transform=True):
     res = []
     for c in categories:
-        data = fetch_news_url_by_category(c)
+        data = fetch_news_url_by_category(c, LIMIT_ROWS_PER_CATEGORY)
         if transform:
             res.extend(transform_data(data))
         else:
@@ -75,17 +75,16 @@ def get_latest_news(data, category='all'):
     df.to_csv('debug.csv')
     print(df.head(5))
     print(df.dtypes)
-
     # Get latest date
     filter_date = df.dropna(subset=['date'])['date'].max()
-    
     if category == 'all':
         return df[df['date'] == filter_date]
     else:
         return df[df['date'] == filter_date][df['type'] == category]
 
-news = fetch_news_url(categories)
-print(get_latest_news(news).head(5))
+def fetch_latest_url(categories):
+    news = fetch_news_url(categories)
+    return get_latest_news(news)
 
 
 

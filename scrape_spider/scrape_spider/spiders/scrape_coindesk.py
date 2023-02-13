@@ -1,17 +1,13 @@
 import scrapy
 import re
 from scrapy.crawler import CrawlerProcess
+from helper_coindesk import fetch_latest_url
 
 class CoindeskSpider(scrapy.Spider):
     name = 'coindesk'
-
-    start_urls = [
-        'https://www.coindesk.com/markets/2023/02/10/crypto-markets-analysis-cryptos-upswing-stalls-this-week-amid-fresh-regulatory-concerns/',
-        'https://www.coindesk.com/markets/2023/02/10/first-mover-americas-the-sandbox-is-up-on-saudi-arabia-partnership-news/',
-        'https://www.coindesk.com/markets/2023/02/10/long-traders-bear-brunt-as-bitcoin-ether-slide-spurs-220m-in-liquidations/',
-        'https://www.coindesk.com/markets/2023/02/10/first-mover-asia-kraken-crypto-staking-settlement-bedevils-markets-as-bitcoin-lingers-below-219k/',
-        'https://www.coindesk.com/business/2023/02/10/genesis-unveils-proposed-sale-plan-with-dcg-bankruptcy-creditors/'
-    ]
+    categories = ['markets','business','policy']
+    news_df = fetch_latest_url(categories)
+    start_urls = news_df['url'].to_list()
 
     def parse(self, response):
         print(response.url)
@@ -49,22 +45,6 @@ class CoindeskSpider(scrapy.Spider):
             'sub-headline':sub_headline,
             'content':res
             }
-
-            # prg = paragraph.css('p').get()
-
-            # # Get the text between tags, removing the link
-            # if prg == None:
-            #     pass
-            # between_tag = re.findall(r'>(.*?)<|<p>(.*?)<', prg)
-            # res = ''
-
-            # print(prg)
-            # if between_tag == None:
-            #     pass
-            # for tp_text in between_tag:
-            #     res += ''.join(list(tp_text))
-            # print(res)
-            # print()
 
 if __name__ == "__main__":
     process = CrawlerProcess({
