@@ -9,6 +9,8 @@ class CoindeskSpider(scrapy.Spider):
     news_df = fetch_latest_url(categories)
     start_urls = news_df['url'].to_list()
 
+    # start_urls = ['https://www.coindesk.com/markets/2023/02/10/first-mover-asia-kraken-crypto-staking-settlement-bedevils-markets-as-bitcoin-lingers-below-219k/']
+
     def parse(self, response):
         print(response.url)
         page = response.url.split('/')[-2]
@@ -19,6 +21,7 @@ class CoindeskSpider(scrapy.Spider):
 
         headline = response.css('div.at-headline').css('h1::text').get()
         sub_headline = response.css('div.at-subheadline').css('h2::text').get()
+        imgs = response.xpath('//*[@id="fusion-app"]/div[2]/div[1]/main/article/div/div/header/div').css('source::attr(srcset)').get()
 
         print('---------------------- HEADLINE ----------------------')
         print(headline)
@@ -38,12 +41,18 @@ class CoindeskSpider(scrapy.Spider):
                 res += ''.join(list(tp_text))
 
         print(res)
-        
+        print('----------------------- IMG -----------------------')
+
+        img = imgs.split(',')[0].split(' ')[0] if imgs != None else None
+        print(img)
+
+
         yield {
             'url':response.url,
             'headline':headline,
             'sub-headline':sub_headline,
-            'content':res
+            'content':res,
+            'image':img
             }
 
 if __name__ == "__main__":
